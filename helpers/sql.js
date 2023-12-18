@@ -1,6 +1,8 @@
 const { BadRequestError } = require("../expressError");
 
-// THIS NEEDS SOME GREAT DOCUMENTATION.
+// Turns JavaScript objects into SQL commands to be used for partial updates
+// ({firstName: 'Aliya', age: 32}, {firstName: 'first_name', age: 'age}) =>
+// {setCols: ['"first_name"=$1', '"age"=$2'], values: ['Aliya', 32]}
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
