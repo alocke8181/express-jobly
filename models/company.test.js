@@ -1,7 +1,7 @@
 "use strict";
 
 const db = require("../db.js");
-const { BadRequestError, NotFoundError } = require("../expressError");
+const { BadRequestError, NotFoundError, ExpressError } = require("../expressError");
 const Company = require("./company.js");
 const {
   commonBeforeAll,
@@ -82,8 +82,177 @@ describe("findAll", function () {
         description: "Desc3",
         numEmployees: 3,
         logoUrl: "http://c3.img",
-      },
+      }
     ]);
+  });
+});
+
+/************************************** find */
+describe('find', ()=>{
+  test('works with min', async ()=>{
+    const query = {minEmployees : 2};
+    let companies = await Company.find(query);
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+  test('works with max', async ()=>{
+    const query = {maxEmployees : 2};
+    let companies = await Company.find(query);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+  test('works with name', async ()=>{
+    const query = {nameLike : 'c'}
+    let companies = await Company.findAll();
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+  test('works with min & name', async ()=>{
+    const query = {minEmployees : 2, nameLike: 'c'};
+    let companies = await Company.find(query);
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+  test('works with max & name', async ()=>{
+    const query = {maxEmployees : 2, nameLike: 'c'};
+    let companies = await Company.find(query);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+  test('works with min & max', async ()=>{
+    const query = {minEmployees : 1, maxEmployees:2};
+    let companies = await Company.find(query);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+  test('works with all 3', async ()=>{
+    const query = {minEmployees : 1, maxEmployees:2, nameLike: 'c'};
+    let companies = await Company.find(query);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+  test('throws error for no companies found', async ()=>{
+    try{
+      const query = {minEmployees : 5000};
+      await Company.find(query);
+      fail();
+    }catch(e){
+      expect (e instanceof NotFoundError).toBeTruthy();
+    };
+  });
+  test('throws error if min > max', async ()=>{
+    try{
+      const query = {minEmployees : 5000, maxEmployees:2};
+      await Company.find(query);
+      fail();
+    }catch(e){
+      expect (e instanceof ExpressError).toBeTruthy();
+    };
   });
 });
 

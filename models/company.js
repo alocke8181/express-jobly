@@ -1,8 +1,8 @@
 "use strict";
 
 const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { BadRequestError, NotFoundError, ExpressError } = require("../expressError");
+const { sqlForPartialUpdate, sqlForFilteredSearch } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -60,6 +60,21 @@ class Company {
            ORDER BY name`);
     return companiesRes.rows;
   }
+
+/** 
+ * Find companies based on search parameters
+ * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+*/
+
+  static async find(query){
+    const {queryString, params} = sqlForFilteredSearch(query);
+    const companyRes = await db.query(queryString, params);
+    if(!companyRes.rows[0]){
+      throw new NotFoundError('No companies found in search', 404);
+    }else{
+      return companyRes.rows;
+    }
+  };
 
   /** Given a company handle, return data about company.
    *
