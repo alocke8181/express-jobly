@@ -5,7 +5,7 @@ const request = require("supertest");
 const db = require("../db.js");
 const app = require("../app");
 const User = require("../models/user");
-
+const Job = require('../models/job.js');
 const {
   commonBeforeAll,
   commonBeforeEach,
@@ -202,7 +202,7 @@ describe("GET /users", function () {
     await db.query("DROP TABLE users CASCADE");
     const resp = await request(app)
         .get("/users")
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(500);
   });
 });
@@ -211,6 +211,14 @@ describe("GET /users", function () {
 
 describe("GET /users/:username", function () {
   test("works for the user", async function () {
+    const job = await Job.create({
+      title : 'j4',
+      salary : 4000,
+      equity : 0,
+      compHandle : 'c1'
+    });
+    await User.apply('u1',job.id);
+
     const resp = await request(app)
         .get(`/users/u1`)
         .set("authorization", `Bearer ${u1Token}`);
@@ -221,11 +229,20 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [job.id]
       },
     });
   });
 
   test("works for the admin", async function () {
+    const job = await Job.create({
+      title : 'j4',
+      salary : 4000,
+      equity : 0,
+      compHandle : 'c1'
+    });
+    await User.apply('u1',job.id);
+
     const resp = await request(app)
         .get(`/users/u1`)
         .set("authorization", `Bearer ${adminToken}`);
@@ -236,6 +253,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: [job.id]
       },
     });
   });
@@ -417,3 +435,43 @@ describe("DELETE /users/:username", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+describe('POST /users/[username]/jobs/[id]', ()=>{
+  test('works admin', async (req,res,next)=>{
+    const job = await Job.create({
+      title : 'j4',
+      salary : 4000,
+      equity : 0,
+      compHandle : 'c1'
+    });
+    const resp = await request(app).post(`/users/u1/jobs/${job.id}`).set("authorization", `Bearer ${adminToken}`);
+    expect(resp.body).toEqual({applied : job.id});
+  });
+  
+  test('works user', async (req,res,next)=>{
+    const job = await Job.create({
+      title : 'j4',
+      salary : 4000,
+      equity : 0,
+      compHandle : 'c1'
+    });
+    const resp = await request(app).post(`/users/u1/jobs/${job.id}`).set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({applied : job.id});
+  });
+
+  test('unauth anon', async (req,res,next)=>{
+    const job = await Job.create({
+      title : 'j4',
+      salary : 4000,
+      equity : 0,
+      compHandle : 'c1'
+    });
+    const resp = await request(app).post(`/users/u1/jobs/${job.id}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test('404 missing job', async (req,res,next)=>{
+    const resp = await request(app).post(`/users/u1/jobs/99999`).set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+})

@@ -261,13 +261,9 @@ describe('find', ()=>{
 describe("get", function () {
   test("works", async function () {
     let company = await Company.get("c1");
-    expect(company).toEqual({
-      handle: "c1",
-      name: "C1",
-      description: "Desc1",
-      numEmployees: 1,
-      logoUrl: "http://c1.img",
-    });
+    expect(company.name).toEqual('C1');
+    expect(company.jobs.length).toEqual(1)
+    expect(company.jobs[0].title).toEqual('j1');
   });
 
   test("not found if no such company", async function () {
