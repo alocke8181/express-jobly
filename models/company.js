@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError, ExpressError } = require("../expressError");
-const { sqlForPartialUpdate, sqlForFilteredSearch } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForFilteredSearchComp } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -67,7 +67,7 @@ class Company {
 */
 
   static async find(query){
-    const {queryString, params} = sqlForFilteredSearch(query);
+    const {queryString, params} = sqlForFilteredSearchComp(query);
     const companyRes = await db.query(queryString, params);
     if(!companyRes.rows[0]){
       throw new NotFoundError('No companies found in search', 404);

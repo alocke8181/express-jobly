@@ -1,6 +1,6 @@
 const db = require('../db');
 const { BadRequestError, NotFoundError, ExpressError } = require("../expressError");
-const {sqlForPartialUpdate} = require('../helpers/sql');
+const {sqlForPartialUpdate, sqlForFilteredSearchJob} = require('../helpers/sql');
 
 class Job{
     /**
@@ -38,6 +38,20 @@ class Job{
         SELECT id, title, salary, equity, company_handle AS "compHandle" 
         FROM jobs ORDER BY id`);
         return result.rows;
+    };
+
+    /**
+     * Find all jobs matching the query params
+     */
+
+    static async find(query){
+        const { queryString, params } = sqlForFilteredSearchJob(query);
+        const jobRes = await db.query(queryString, params);
+        if(!jobRes.rows[0]){
+            throw new NotFoundError('No jobs found in search');
+        }else{
+            return jobRes.rows;
+        };
     };
 
     /**
@@ -99,7 +113,7 @@ class Job{
             RETURNING id`,
             [id]);
         if(!result.rows[0]){
-            throw new NotFoundError(`No job with id ${id}`);
+            throw new NotFoundError(`No job with id ${id}`, 404);
         };
     };
 

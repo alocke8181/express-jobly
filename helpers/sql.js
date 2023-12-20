@@ -27,7 +27,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  */
 
 
-function sqlForFilteredSearch(query){
+function sqlForFilteredSearchComp(query){
   const minEmployees = query.minEmployees;
     const maxEmployees = query.maxEmployees;
     const nameLike = query.nameLike;
@@ -65,4 +65,40 @@ function sqlForFilteredSearch(query){
     return {queryString, params};
 }
 
-module.exports = { sqlForPartialUpdate, sqlForFilteredSearch };
+function sqlForFilteredSearchJob(query){
+  const minSalary = query.minSalary;
+    const hasEquity = query.hasEquity;
+    const title = query.title;
+    let lowerTitle;
+    if(title){
+      lowerTitle = '%' + title.toLowerCase() + '%';
+    };
+    let index = 1;
+    let params = []
+    let queryString = 'SELECT id, title, salary, equity, company_handle as "compHandle" FROM jobs ';
+    if(minSalary || (hasEquity && hasEquity === "true") || lowerTitle){
+      queryString = queryString + 'WHERE '
+    }
+    if(minSalary){
+      queryString = queryString + `salary >= $${index} `;
+      params.push(minSalary);
+      index++;
+      if(hasEquity || lowerTitle){
+        queryString = queryString + 'AND '
+      };
+    };
+    if(hasEquity && hasEquity === "true"){
+      queryString = queryString + `equity > 0 `;
+      if(lowerTitle){
+        queryString = queryString + 'AND '
+      }
+    };
+    if(lowerTitle){
+      queryString = queryString + `LOWER(title) LIKE $${index} `
+      params.push(lowerTitle);
+    };
+    queryString = queryString + 'ORDER BY id';
+    return {queryString, params};
+}
+
+module.exports = { sqlForPartialUpdate, sqlForFilteredSearchComp, sqlForFilteredSearchJob };
