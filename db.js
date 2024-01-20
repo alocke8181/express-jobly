@@ -16,8 +16,7 @@ if (process.env.NODE_ENV === "production") {
   });
 } else {
   db = new Client({
-    host: "/var/run/postgresql",
-    database: getDatabaseUri()
+    connectionString : getDatabaseUri()
   });
 }
 
