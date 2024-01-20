@@ -20,6 +20,8 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+console.log(getDatabaseUri());
+
 db.connect();
 
 module.exports = db;
