@@ -7,8 +7,9 @@ let db;
 
 if (process.env.NODE_ENV === "production") {
   db = new Client({
-    host: "/var/run/postgresql",
-    database: getDatabaseUri(),
+    //host: "/var/run/postgresql",
+    //database: getDatabaseUri(),
+    connectionString : getDatabaseUri();
     ssl: {
       rejectUnauthorized: false
     }
